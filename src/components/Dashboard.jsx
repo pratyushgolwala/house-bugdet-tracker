@@ -5,6 +5,7 @@ import ExpenseForm from './ExpenseForm';
 import ExpenseList from './ExpenseList';
 import ExpenseCharts from './ExpenseCharts';
 import StatsCards from './StatsCards';
+import TransactionUpload from './TransactionUpload'; // <-- Import the new component
 
 const Dashboard = () => {
     const [expenses, setExpenses] = useState([]);
@@ -13,40 +14,41 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
 
+    // Fetch expenses and categories from the database
+    const fetchData = async () => {
+        try {
+            setIsLoading(true);
+
+            // Fetch expenses
+            const expensesResponse = await fetch(
+                'http://localhost:3001/api/expenses'
+            );
+            if (!expensesResponse.ok)
+                throw new Error('Failed to fetch expenses');
+            const expensesData = await expensesResponse.json();
+
+            // Fetch categories
+            const categoriesResponse = await fetch(
+                'http://localhost:3001/api/categories'
+            );
+            if (!categoriesResponse.ok)
+                throw new Error('Failed to fetch categories');
+            const categoriesData = await categoriesResponse.json();
+
+            setExpenses(expensesData);
+            setCategories(categoriesData);
+            setError(null);
+        } catch (err) {
+            setError(
+                'Error loading data. Please make sure the server is running.'
+            );
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setIsLoading(true);
-
-                // Fetch expenses
-                const expensesResponse = await fetch(
-                    'http://localhost:3001/api/expenses'
-                );
-                if (!expensesResponse.ok)
-                    throw new Error('Failed to fetch expenses');
-                const expensesData = await expensesResponse.json();
-
-                // Fetch categories
-                const categoriesResponse = await fetch(
-                    'http://localhost:3001/api/categories'
-                );
-                if (!categoriesResponse.ok)
-                    throw new Error('Failed to fetch categories');
-                const categoriesData = await categoriesResponse.json();
-
-                setExpenses(expensesData);
-                setCategories(categoriesData);
-                setError(null);
-            } catch (err) {
-                setError(
-                    'Error loading data. Please make sure the server is running.'
-                );
-                console.error(err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         fetchData();
     }, []);
 
@@ -162,6 +164,16 @@ const Dashboard = () => {
                     >
                         Analytics
                     </button>
+                    <button
+                        onClick={() => setActiveTab('upload')}
+                        className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                            activeTab === 'upload'
+                                ? 'border-blue-500 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                    >
+                        Upload & Compare
+                    </button>
                 </nav>
             </div>
 
@@ -208,6 +220,14 @@ const Dashboard = () => {
                         showAll={true}
                     />
                 </div>
+            )}
+
+            {activeTab === 'upload' && (
+                <TransactionUpload
+                    manualExpenses={expenses}
+                    categories={categories}
+                    fetchData={fetchData}
+                />
             )}
         </div>
     );
