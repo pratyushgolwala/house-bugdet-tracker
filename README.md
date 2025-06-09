@@ -22,7 +22,7 @@ A simple, user-friendly household budget tracker built with **React** (frontend)
 | Frontend   | React (Vite or CRA) |
 | Styling    | CSS / Tailwind / Bootstrap |
 | Database   | SQLite           |
-| Backend (if any) | Node.js / Express (optional if SQLite is used locally via Electron or other embedded methods) |
+
 
 ---
 
